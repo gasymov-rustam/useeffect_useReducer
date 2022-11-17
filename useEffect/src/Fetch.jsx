@@ -1,34 +1,51 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAxiosWithAbort } from './hooks/useAxiosWithAbort';
+import { fetchWithAbortController } from './utils/fetchWithAbortController';
+import { fetchWithAXiosCancel } from './utils/fetchWithAXiosCancel';
+
+let idd = 2;
+
+const api = axios.create({
+  baseURL: 'https://jsonplaceholder.typicode.com/users',
+});
 
 export const Fetch = (props) => {
   const [user, setUsers] = useState([]);
   const id = useLocation().pathname.split('/')[2];
+  const fetchedData = useAxiosWithAbort(`/${id}`, api);
+  // const { data } = useAxios(`https://jsonplaceholder.typicode.com/users/${id}`);
+  // const { fetchedData, isLoading, error } = useFetchWithAbort(
+  //   `https://jsonplaceholder.typicode.com/users/${id}`
+  // );
+  console.log(fetchedData);
 
-  useEffect(() => {
-    const cancelToken = axios.CancelToken.source();
+  // console.log(fetchedData, isLoading, error);
 
-    (async () => {
-      try {
-        const response = await axios.get(`https://jsonplaceholder.typicode.com/users/${id}`, {
-          cancelToken: cancelToken.token,
-        });
-        const data = await response.data;
-        console.log('data', 'fetch user number', id);
-      } catch (err) {
-        if (axios.isCancel(err)) {
-          console.log('cancelled', 'fetch user number', id);
-        } else {
-          console.log('other mistake');
-        }
-      }
-    })();
+  // useEffect(() => {
+  //   const cancelToken = axios.CancelToken.source();
 
-    return () => {
-      cancelToken.cancel();
-    };
-  }, [id]);
+  //   (async () => {
+  //     try {
+  //       const response = await axios.get(`https://jsonplaceholder.typicode.com/users/${id}`, {
+  //         cancelToken: cancelToken.token,
+  //       });
+  //       const data = await response.data;
+  //       console.log('data', 'fetch user number', id);
+  //     } catch (err) {
+  //       if (axios.isCancel(err)) {
+  //         console.log('cancelled', 'fetch user number', id);
+  //       } else {
+  //         console.log('other mistake');
+  //       }
+  //     }
+  //   })();
+
+  //   return () => {
+  //     cancelToken.cancel();
+  //   };
+  // }, [id]);
   // useEffect(() => {
   //   const controller = new AbortController();
   //   const signal = controller.signal;
@@ -77,12 +94,26 @@ export const Fetch = (props) => {
   //     controller.abort();
   //   };
   // }, [id]);
+  // const handle = async () => {
+  //   idd = idd === 2 ? 3 : 2;
+  //   console.log(idd);
+  //   const data = await fetchWithAbortController(
+  //     `https://jsonplaceholder.typicode.com/users/${idd}`
+  //   );
+  //   console.log(data?.data);
+  // };
+  const handle = async () => {
+    idd = idd === 2 ? 3 : 2;
+    const data = await fetchWithAXiosCancel(`/${idd}`, api);
+    console.log(data?.data);
+  };
 
   return (
     <div>
       <p>Name: {user?.name}</p>
       <p>Username: {user?.username}</p>
       <p>Email: {user?.email}</p>
+      <button onClick={handle}>Fetch</button>
       <Link to='/users/1'>Fetch user 1</Link>
       <Link to='/users/2'>Fetch user 2</Link>
       <Link to='/users/3'>Fetch user 3</Link>
